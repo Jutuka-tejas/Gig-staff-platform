@@ -1,0 +1,138 @@
+{% extends "base.html" %}
+{% block title %}Assign Workers — {{ job.event_name }}{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+
+  <a href="{{ url_for('jobs') }}" class="back-link mb-4 d-inline-block">
+    <i class="bi bi-arrow-left me-1"></i>Back to Jobs
+  </a>
+
+  <!-- Job summary -->
+  <div class="job-summary-banner mb-5">
+    <div class="row align-items-center g-3">
+      <div class="col-md-7">
+        <div class="page-eyebrow"><i class="bi bi-briefcase-fill me-1"></i>Assigning Staff</div>
+        <h2 class="page-title mb-1">{{ job.event_name }}</h2>
+        <div class="d-flex flex-wrap gap-3 text-muted">
+          <span><i class="bi bi-geo-alt-fill me-1"></i>{{ job.location }}</span>
+          <span><i class="bi bi-calendar3 me-1"></i>{{ job.event_datetime[:16] }}</span>
+          <span><i class="bi bi-currency-rupee me-1"></i>₹{{ "%.0f"|format(job.pay_per_worker) }} / worker</span>
+        </div>
+      </div>
+      <div class="col-md-5 text-md-end">
+        <div class="workers-needed-badge">
+          <span class="big-num">{{ already_assigned|length }} / {{ job.workers_needed }}</span>
+          <small>workers assigned</small>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-4">
+
+    <!-- Assign Form -->
+    <div class="col-lg-7">
+      <div class="form-card">
+        <div class="form-card-header">
+          <i class="bi bi-person-plus-fill"></i>
+          <div>
+            <h5 class="mb-0">Available Workers</h5>
+            <small class="text-muted">Select workers to assign to this event.</small>
+          </div>
+        </div>
+
+        {% if available_workers %}
+        <form action="{{ url_for('assign', job_id=job.id) }}" method="POST">
+          <div class="worker-select-list">
+            {% for w in available_workers %}
+            <label class="worker-select-row">
+              <input type="checkbox" name="worker_ids" value="{{ w.id }}" />
+              <div class="worker-avatar">{{ w.name[0]|upper }}</div>
+              <div class="flex-grow-1">
+                <div class="fw-semibold">{{ w.name }}</div>
+                <div class="text-muted small">
+                  <i class="bi bi-telephone me-1"></i>{{ w.phone }}
+                  &nbsp;·&nbsp;
+                  <i class="bi bi-geo-alt me-1"></i>{{ w.location }}
+                </div>
+              </div>
+              <span class="skill-badge skill-{{ w.skill|lower }}">{{ w.skill }}</span>
+            </label>
+            {% endfor %}
+          </div>
+
+          <div class="d-flex gap-2 mt-3">
+            <button type="button" class="btn btn-sm btn-outline-secondary" id="selectAll">
+              Select All
+            </button>
+            <button type="button" class="btn btn-sm btn-outline-secondary" id="clearAll">
+              Clear
+            </button>
+            <button type="submit" class="btn btn-primary ms-auto">
+              <i class="bi bi-check2-circle me-2"></i>Assign Selected
+            </button>
+          </div>
+        </form>
+
+        {% else %}
+        <div class="empty-state py-4">
+          <i class="bi bi-person-x"></i>
+          <p class="mb-0">No available workers to assign right now.</p>
+          <small class="text-muted">Check back after more workers register or become available.</small>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Currently Assigned -->
+    <div class="col-lg-5">
+      <div class="form-card">
+        <div class="form-card-header">
+          <i class="bi bi-person-check-fill"></i>
+          <div>
+            <h5 class="mb-0">Assigned ({{ already_assigned|length }})</h5>
+            <small class="text-muted">Currently confirmed for this event.</small>
+          </div>
+        </div>
+
+        {% if already_assigned %}
+        <ul class="assigned-list">
+          {% for w in already_assigned %}
+          <li class="assigned-item">
+            <div class="worker-avatar sm">{{ w.name[0]|upper }}</div>
+            <div class="flex-grow-1">
+              <div class="fw-semibold">{{ w.name }}</div>
+              <small class="text-muted">{{ w.skill }} · {{ w.location }}</small>
+            </div>
+            <form action="{{ url_for('unassign', job_id=job.id, worker_id=w.id) }}"
+                  method="POST" onsubmit="return confirm('Unassign {{ w.name }}?')">
+              <button type="submit" class="btn btn-xs btn-danger-soft">
+                <i class="bi bi-x"></i>
+              </button>
+            </form>
+          </li>
+          {% endfor %}
+        </ul>
+        {% else %}
+        <div class="empty-state py-3">
+          <i class="bi bi-person-dash" style="font-size:1.8rem"></i>
+          <small class="text-muted">No workers assigned yet.</small>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.getElementById('selectAll')?.addEventListener('click', () =>
+  document.querySelectorAll('.worker-select-row input').forEach(c => c.checked = true));
+
+document.getElementById('clearAll')?.addEventListener('click', () =>
+  document.querySelectorAll('.worker-select-row input').forEach(c => c.checked = false));
+</script>
+{% endblock %}

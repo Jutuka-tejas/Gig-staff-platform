@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% block title %}Admin Login{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-4 col-md-6">
+
+      <!-- Lock Icon Header -->
+      <div class="text-center mb-4">
+        <div class="login-icon">🔐</div>
+        <div class="page-eyebrow mt-3">Restricted Area</div>
+        <h2 class="page-title mb-1">Admin Login</h2>
+        <p class="text-muted small">Only authorized admins can access this area.</p>
+      </div>
+
+      <div class="form-card">
+
+        <form action="{{ url_for('admin_login') }}" method="POST">
+
+          <!-- Username -->
+          <div class="mb-4">
+            <label class="form-label fw-semibold" for="username">Username</label>
+            <div class="input-group-custom">
+              <i class="bi bi-person-lock"></i>
+              <input type="text" class="form-control" id="username" name="username"
+                     placeholder="Enter admin username" required autofocus />
+            </div>
+          </div>
+
+          <!-- Password -->
+          <div class="mb-4">
+            <label class="form-label fw-semibold" for="password">Password</label>
+            <div class="input-group-custom" id="passWrapper">
+              <i class="bi bi-lock"></i>
+              <input type="password" class="form-control" id="password" name="password"
+                     placeholder="Enter admin password" required />
+              <!-- Show/hide password toggle -->
+              <button type="button" class="pass-toggle" onclick="togglePassword()">
+                <i class="bi bi-eye" id="eyeIcon"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Default credentials hint box -->
+          <div class="hint-box mb-4">
+            <i class="bi bi-info-circle-fill"></i>
+            <div>
+              <strong>Default Credentials</strong>
+              <p class="mb-0 small">Username: <code>admin</code> &nbsp;|&nbsp; Password: <code>admin123</code></p>
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-primary btn-lg w-100 submit-btn">
+            <i class="bi bi-shield-lock-fill me-2"></i>Login as Admin
+          </button>
+
+        </form>
+
+      </div>
+
+      <!-- Back to public site -->
+      <div class="text-center mt-3">
+        <a href="{{ url_for('index') }}" class="back-link">
+          <i class="bi bi-arrow-left me-1"></i>Back to Worker Registration
+        </a>
+      </div>
+
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function togglePassword() {
+  const input   = document.getElementById('password');
+  const icon    = document.getElementById('eyeIcon');
+  const isHidden = input.type === 'password';
+  input.type    = isHidden ? 'text' : 'password';
+  icon.className = isHidden ? 'bi bi-eye-slash' : 'bi bi-eye';
+}
+</script>
+{% endblock %}

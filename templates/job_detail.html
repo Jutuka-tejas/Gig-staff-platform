@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+{% block title %}{{ job.event_name }} — Details{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <a href="{{ url_for('jobs') }}" class="back-link mb-4 d-inline-block">
+    <i class="bi bi-arrow-left me-1"></i>Back to Jobs
+  </a>
+
+  <div class="row g-4">
+    <div class="col-lg-8">
+      <div class="form-card">
+        <div class="detail-hero">
+          <div class="detail-icon">🎪</div>
+          <div>
+            <h2 class="mb-1">{{ job.event_name }}</h2>
+            <span class="job-id-badge">Job #{{ job.id }}</span>
+          </div>
+        </div>
+
+        <div class="detail-grid mt-4">
+          <div class="detail-item">
+            <i class="bi bi-geo-alt-fill"></i>
+            <div>
+              <small>Location</small>
+              <strong>{{ job.location }}</strong>
+            </div>
+          </div>
+          <div class="detail-item">
+            <i class="bi bi-calendar3"></i>
+            <div>
+              <small>Date &amp; Time</small>
+              <strong>{{ job.event_datetime[:16] }}</strong>
+            </div>
+          </div>
+          <div class="detail-item">
+            <i class="bi bi-people-fill"></i>
+            <div>
+              <small>Workers Needed</small>
+              <strong>{{ job.workers_needed }}</strong>
+            </div>
+          </div>
+          <div class="detail-item">
+            <i class="bi bi-currency-rupee"></i>
+            <div>
+              <small>Pay per Worker</small>
+              <strong>₹{{ "%.0f"|format(job.pay_per_worker) }}</strong>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-4 d-flex gap-2">
+          <a href="{{ url_for('assign', job_id=job.id) }}" class="btn btn-primary">
+            <i class="bi bi-person-plus-fill me-2"></i>Manage Assignments
+          </a>
+          <form action="{{ url_for('delete_job', job_id=job.id) }}" method="POST"
+                onsubmit="return confirm('Delete this job?')">
+            <button type="submit" class="btn btn-outline-danger">
+              <i class="bi bi-trash3-fill me-2"></i>Delete Job
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-4">
+      <div class="form-card">
+        <div class="form-card-header">
+          <i class="bi bi-person-check-fill"></i>
+          <div>
+            <h5 class="mb-0">Assigned Workers</h5>
+            <small class="text-muted">{{ assigned|length }} / {{ job.workers_needed }} filled</small>
+          </div>
+        </div>
+        {% if assigned %}
+        <ul class="assigned-list">
+          {% for w in assigned %}
+          <li class="assigned-item">
+            <div class="worker-avatar sm">{{ w.name[0]|upper }}</div>
+            <div>
+              <div class="fw-semibold">{{ w.name }}</div>
+              <small class="text-muted">{{ w.skill }}</small>
+            </div>
+          </li>
+          {% endfor %}
+        </ul>
+        {% else %}
+        <div class="empty-state py-3">
+          <i class="bi bi-person-dash" style="font-size:1.8rem"></i>
+          <small class="text-muted">No workers assigned yet.</small>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

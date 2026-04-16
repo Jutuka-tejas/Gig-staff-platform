@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+{% block title %}Post a Job{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-7 col-md-9">
+
+      <div class="page-header mb-5">
+        <a href="{{ cancel_url if cancel_url else url_for('organizer_dashboard') }}" class="back-link">
+          <i class="bi bi-arrow-left me-1"></i>Back to Dashboard
+        </a>
+        <div class="page-eyebrow mt-2"><i class="bi bi-plus-circle-fill me-1"></i>New Posting</div>
+        <h2 class="page-title mb-0">Post an Event Job</h2>
+        <p class="text-muted mt-1">Fill in the event details to notify available workers.</p>
+      </div>
+
+      <div class="form-card">
+        <form action="{{ form_action if form_action else url_for('organizer_add_job') }}" method="POST">
+
+          <!-- Event Name -->
+          <div class="mb-4">
+            <label class="form-label fw-semibold" for="event_name">Event Name</label>
+            <div class="input-group-custom">
+              <i class="bi bi-stars"></i>
+              <input type="text" class="form-control" id="event_name" name="event_name"
+                     placeholder="e.g. Grand Wedding Reception" required />
+            </div>
+          </div>
+
+          <!-- Location -->
+          <div class="mb-4">
+            <label class="form-label fw-semibold" for="location">Event Location</label>
+            <div class="input-group-custom">
+              <i class="bi bi-geo-alt"></i>
+              <input type="text" class="form-control" id="location" name="location"
+                     placeholder="e.g. The Taj Banquet Hall, Jubilee Hills" required />
+            </div>
+          </div>
+
+          <!-- Date & Time -->
+          <div class="mb-4">
+            <label class="form-label fw-semibold" for="event_datetime">Date &amp; Time</label>
+            <div class="input-group-custom">
+              <i class="bi bi-calendar-event"></i>
+              <input type="datetime-local" class="form-control" id="event_datetime"
+                     name="event_datetime" required />
+            </div>
+          </div>
+
+          <!-- Workers + Pay -->
+          <div class="row g-3 mb-4">
+            <div class="col-6">
+              <label class="form-label fw-semibold" for="workers_needed">Workers Needed</label>
+              <div class="input-group-custom">
+                <i class="bi bi-people"></i>
+                <input type="number" class="form-control" id="workers_needed"
+                       name="workers_needed" min="1" max="500" placeholder="e.g. 10" required />
+              </div>
+            </div>
+            <div class="col-6">
+              <label class="form-label fw-semibold" for="pay_per_worker">Pay per Worker (₹)</label>
+              <div class="input-group-custom">
+                <i class="bi bi-currency-rupee"></i>
+                <input type="number" class="form-control" id="pay_per_worker"
+                       name="pay_per_worker" min="1" step="50" placeholder="e.g. 800" required />
+              </div>
+            </div>
+          </div>
+
+          <!-- Notification info box -->
+          <div class="notif-box mb-4">
+            <i class="bi bi-bell-fill"></i>
+            <div>
+              <strong>Auto-Notification Enabled</strong>
+              <p class="mb-0 small">When you post this job, all registered available workers will be notified instantly.</p>
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-primary btn-lg w-100 submit-btn">
+            <i class="bi bi-send-fill me-2"></i>Post Job &amp; Notify Workers
+          </button>
+        </form>
+      </div>
+
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,320 @@
+{% extends "base.html" %}
+{% block title %}Admin Dashboard{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+
+  <!-- Page Header -->
+  <div class="page-header d-flex justify-content-between align-items-center flex-wrap gap-3 mb-5">
+    <div>
+      <div class="page-eyebrow"><i class="bi bi-shield-lock-fill me-1"></i>Admin Panel</div>
+      <h2 class="page-title mb-0">Worker Dashboard</h2>
+    </div>
+    <div class="d-flex gap-2 flex-wrap">
+      <a href="{{ url_for('create_organizer') }}" class="btn btn-accent">
+        <i class="bi bi-person-plus-fill me-2"></i>Create Organizer
+      </a>
+      <a href="{{ url_for('jobs') }}" class="btn btn-outline-secondary">
+        <i class="bi bi-briefcase me-2"></i>View All Jobs
+      </a>
+      <a href="{{ url_for('admin_logout') }}" class="btn btn-outline-secondary">
+        <i class="bi bi-box-arrow-right me-2"></i>Logout
+      </a>
+    </div>
+  </div>
+
+  <!-- Stats Cards -->
+  <div class="row g-3 mb-5">
+    <div class="col-6 col-md-2">
+      <div class="stat-card">
+        <div class="stat-icon" style="background:var(--clr-gold-soft)">
+          <i class="bi bi-people-fill" style="color:var(--clr-gold)"></i>
+        </div>
+        <div class="stat-num">{{ stats.total }}</div>
+        <div class="stat-lbl">Workers</div>
+      </div>
+    </div>
+    <div class="col-6 col-md-2">
+      <div class="stat-card">
+        <div class="stat-icon" style="background:#d1fae5">
+          <i class="bi bi-check-circle-fill" style="color:#059669"></i>
+        </div>
+        <div class="stat-num">{{ stats.available }}</div>
+        <div class="stat-lbl">Available</div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="stat-card">
+        <div class="stat-icon" style="background:#ede9fe">
+          <i class="bi bi-building" style="color:#7c3aed"></i>
+        </div>
+        <div class="stat-num">{{ stats.total_organizers }}</div>
+        <div class="stat-lbl">Organizers</div>
+      </div>
+    </div>
+    <div class="col-6 col-md-2">
+      <div class="stat-card">
+        <div class="stat-icon" style="background:#fce7f3">
+          <i class="bi bi-briefcase-fill" style="color:#be185d"></i>
+        </div>
+        <div class="stat-num">{{ stats.total_jobs }}</div>
+        <div class="stat-lbl">Jobs</div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="stat-card">
+        <div class="stat-icon" style="background:#fee2e2">
+          <i class="bi bi-person-check-fill" style="color:#dc2626"></i>
+        </div>
+        <div class="stat-num">{{ stats.total_assignments }}</div>
+        <div class="stat-lbl">Assignments</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Search / Filter Bar -->
+  <form method="GET" action="{{ url_for('admin') }}" class="filter-bar mb-4">
+    <div class="row g-2">
+      <div class="col-md-5">
+        <div class="input-group-custom">
+          <i class="bi bi-search"></i>
+          <input type="text" name="search" class="form-control"
+                 placeholder="Search by name, phone, or location…"
+                 value="{{ search }}" />
+        </div>
+      </div>
+      <div class="col-md-3">
+        <select name="skill" class="form-select">
+          <option value="">All Skills</option>
+          {% for s in ['Serving','Cleaning','Bartender','Helper'] %}
+            <option value="{{ s }}" {% if skill_filter == s %}selected{% endif %}>{{ s }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-2">
+        <select name="available" class="form-select">
+          <option value="">Any Status</option>
+          <option value="1" {% if avail_filter == '1' %}selected{% endif %}>Available</option>
+          <option value="0" {% if avail_filter == '0' %}selected{% endif %}>Unavailable</option>
+        </select>
+      </div>
+      <div class="col-md-2 d-flex gap-2">
+        <button type="submit" class="btn btn-primary flex-grow-1">Filter</button>
+        <a href="{{ url_for('admin') }}" class="btn btn-outline-secondary">
+          <i class="bi bi-x-lg"></i>
+        </a>
+      </div>
+    </div>
+  </form>
+
+  <!-- Workers Table -->
+  {% if workers %}
+  <div class="table-card">
+    <div class="table-card-header">
+      <span>{{ workers|length }} worker(s) found</span>
+    </div>
+    <div class="table-responsive">
+      <table class="table table-hover mb-0 admin-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Worker</th>
+            <th>Phone</th>
+            <th>Location</th>
+            <th>Skill</th>
+            <th>Status</th>
+            <th>Joined</th>
+            <th class="text-center">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for w in workers %}
+          <tr>
+            <td class="text-muted small">{{ w.id }}</td>
+            <td>
+              <div class="d-flex align-items-center gap-2">
+                <div class="worker-avatar">{{ w.name[0]|upper }}</div>
+                <span class="fw-semibold">{{ w.name }}</span>
+              </div>
+            </td>
+            <td><a href="tel:{{ w.phone }}">{{ w.phone }}</a></td>
+            <td><i class="bi bi-geo-alt-fill text-muted me-1"></i>{{ w.location }}</td>
+            <td><span class="skill-badge skill-{{ w.skill|lower }}">{{ w.skill }}</span></td>
+            <td>
+              <form action="{{ url_for('toggle_availability', worker_id=w.id) }}" method="POST" class="d-inline">
+                <button type="submit" class="btn btn-sm status-toggle
+                  {% if w.available %}btn-success-soft{% else %}btn-muted-soft{% endif %}">
+                  {% if w.available %}
+                    <i class="bi bi-check-circle-fill me-1"></i>Available
+                  {% else %}
+                    <i class="bi bi-dash-circle-fill me-1"></i>Busy
+                  {% endif %}
+                </button>
+              </form>
+            </td>
+            <td class="text-muted small">{{ w.registered[:10] }}</td>
+            <td class="text-center">
+              <form action="{{ url_for('delete_worker', worker_id=w.id) }}" method="POST"
+                    onsubmit="return confirm('Remove {{ w.name }}?')">
+                <button type="submit" class="btn btn-sm btn-danger-soft">
+                  <i class="bi bi-trash3-fill"></i>
+                </button>
+              </form>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  {% else %}
+  <div class="empty-state">
+    <i class="bi bi-people"></i>
+    <h5>No workers found</h5>
+    <p class="text-muted">
+      {% if search or skill_filter or avail_filter %}
+        Try adjusting your filters.
+      {% else %}
+        Workers will appear here once they register.
+      {% endif %}
+    </p>
+    <a href="{{ url_for('index') }}" class="btn btn-primary btn-sm">View Registration Page</a>
+  </div>
+  {% endif %}
+
+  <!-- ── ORGANIZER ACCOUNTS SECTION ──────── -->
+  <div class="d-flex justify-content-between align-items-center mt-5 mb-3 flex-wrap gap-2">
+    <div>
+      <div class="page-eyebrow"><i class="bi bi-building me-1"></i>Organizer Accounts</div>
+      <h4 class="page-title mb-0" style="font-size:1.4rem">Manage Organizers</h4>
+    </div>
+    <a href="{{ url_for('create_organizer') }}" class="btn btn-primary btn-sm">
+      <i class="bi bi-person-plus-fill me-2"></i>Create New Account
+    </a>
+  </div>
+
+  {% if organizers %}
+  <div class="table-card mb-5">
+    <div class="table-card-header">
+      {{ organizers|length }} organizer account(s)
+    </div>
+    <div class="table-responsive">
+      <table class="table table-hover mb-0 admin-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Organizer</th>
+            <th>Username</th>
+            <th>Company</th>
+            <th>Phone</th>
+            <th>Status</th>
+            <th>Created</th>
+            <th class="text-center">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for org in organizers %}
+          <tr>
+            <td class="text-muted small">{{ org.id }}</td>
+            <td>
+              <div class="d-flex align-items-center gap-2">
+                <div class="worker-avatar" style="background:linear-gradient(135deg,#7c3aed,#4c1d95)">
+                  {{ org.name[0]|upper }}
+                </div>
+                <span class="fw-semibold">{{ org.name }}</span>
+              </div>
+            </td>
+            <td><code class="username-code">{{ org.username }}</code></td>
+            <td>{{ org.company or '—' }}</td>
+            <td>{{ org.phone or '—' }}</td>
+            <td>
+              <form action="{{ url_for('toggle_organizer', org_id=org.id) }}" method="POST" class="d-inline">
+                <button type="submit" class="btn btn-sm
+                  {% if org.active %}btn-success-soft{% else %}btn-muted-soft{% endif %}">
+                  {% if org.active %}
+                    <i class="bi bi-check-circle-fill me-1"></i>Active
+                  {% else %}
+                    <i class="bi bi-dash-circle-fill me-1"></i>Disabled
+                  {% endif %}
+                </button>
+              </form>
+            </td>
+            <td class="text-muted small">{{ org.created_at[:10] }}</td>
+            <td class="text-center">
+              <div class="d-flex gap-1 justify-content-center">
+
+                <!-- Reset Password -->
+                <button type="button" class="btn btn-sm btn-outline-secondary"
+                        onclick="showResetForm({{ org.id }}, '{{ org.name }}')"
+                        title="Reset Password">
+                  <i class="bi bi-key-fill"></i>
+                </button>
+
+                <!-- Delete -->
+                <form action="{{ url_for('delete_organizer', org_id=org.id) }}" method="POST"
+                      onsubmit="return confirm('Delete account for {{ org.name }}? All their jobs will be deleted too.')">
+                  <button type="submit" class="btn btn-sm btn-danger-soft" title="Delete">
+                    <i class="bi bi-trash3-fill"></i>
+                  </button>
+                </form>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  {% else %}
+  <div class="empty-state mb-5">
+    <i class="bi bi-building"></i>
+    <h5>No organizer accounts yet</h5>
+    <p class="text-muted">Create accounts for event organizers so they can login and post jobs.</p>
+    <a href="{{ url_for('create_organizer') }}" class="btn btn-primary btn-sm">
+      <i class="bi bi-person-plus-fill me-2"></i>Create First Account
+    </a>
+  </div>
+  {% endif %}
+
+</div>
+
+<!-- Reset Password Modal -->
+<div class="modal fade" id="resetModal" tabindex="-1">
+  <div class="modal-dialog modal-sm">
+    <div class="modal-content">
+      <div class="modal-header border-0 pb-0">
+        <h6 class="modal-title fw-bold">🔑 Reset Password</h6>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <form id="resetForm" method="POST">
+        <div class="modal-body">
+          <p class="text-muted small mb-3">Setting new password for: <strong id="resetName"></strong></p>
+          <div class="input-group-custom">
+            <i class="bi bi-lock"></i>
+            <input type="text" class="form-control" name="new_password"
+                   placeholder="Enter new password" required />
+          </div>
+        </div>
+        <div class="modal-footer border-0 pt-0">
+          <button type="submit" class="btn btn-primary btn-sm w-100">
+            <i class="bi bi-check2 me-1"></i>Reset Password
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+function showResetForm(orgId, orgName) {
+  document.getElementById('resetName').textContent = orgName;
+  document.getElementById('resetForm').action = '/admin/reset_password/' + orgId;
+  new bootstrap.Modal(document.getElementById('resetModal')).show();
+}
+</script>
+{% endblock %}
